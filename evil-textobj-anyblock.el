@@ -123,4 +123,6 @@ outer text object. Otherwise it will be an inner one."
 (evil-define-text-object evil-anyblock-a-block (count &optional beg end type)
   "Select the closest outer anyblock block."
   (evil-anyblock--make-textobj t))
+
+(provide 'evil-anyblock)
 ;;; evil-textobj-anyblock.el ends here
