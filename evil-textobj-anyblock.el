@@ -46,83 +46,52 @@ alist."
           :key-type regexp
           :value-type rexegp))
 
-(defcustom evil-anyblock-boundary
-  5000
-  "Max range from point to search backwards for open block."
-  :group 'evil-anyblock
-  :type 'number)
-
-(defun evil-anyblock--distance-from-point (open-block bound-pos)
-  "If OPEN-BLOCK is matched within the BOUND-POS, returns a plist for
-OPEN-BLOCK, the corresponding close block, and the distance to the match."
-  (save-excursion
-    (let ((case-fold-search nil)
-          (match-pos
-           (progn
-             ;; potentially expand selection if more than one character selected
-             (if (and
-                  (equal evil-state 'visual)
-                  (not (equal (marker-position evil-visual-beginning)
-                              (- (marker-position evil-visual-end) 1))))
-                 (progn
-                   (goto-char evil-visual-beginning)
-                   (evil-backward-char))
-               (right-char))
-             (save-excursion
-               (re-search-backward open-block bound-pos t)))))
-      (when match-pos
-        (list ':open-block open-block
-              ':close-block (cdr (assoc open-block evil-anyblock-blocks))
-              ':distance (- match-pos (point)))))))
-
-(defun evil-anyblock--find-closest-block ()
-  "Finds the closest open block and converts the block to a character when
-possible (so that evil-up-paren will be used instead of evil-up-block) and
-returns a list containing the open block followed by the close block."
-  (let* ((closest-block-info
-          (car
-           (sort
-            (cl-loop for (open-block . _) in evil-anyblock-blocks
-                     when (evil-anyblock--distance-from-point
-                           open-block
-                           (- (point) evil-anyblock-boundary))
-                     collect it)
-            ;; > since all distances negative
-            (lambda (x y) (> (plist-get x ':distance)
-                             (plist-get y ':distance))))))
-         (open-block (plist-get closest-block-info ':open-block))
-         (close-block (plist-get closest-block-info ':close-block)))
-    ;; if in visual-mode, move outside of current selection
-    (save-excursion
-      (when (equal evil-state 'visual)
-        (goto-char evil-visual-beginning)
-        (evil-backward-char))
-      (if (= 1 (length open-block) (length close-block))
-          ;; evil-select-paren has undesirable behaviour for strings (evil-up-block)
-          (list (string-to-char open-block) (string-to-char close-block))
-        (list open-block close-block)))))
-
-(defun evil-anyblock--make-textobj (outerp)
-  "Helper function to prevent need for duplicating the same function for both
-the inner and outer textobjects. If OUTERP is true, the text object will be an
-outer text object. Otherwise it will be an inner one."
-  (let* ((blocks (evil-anyblock--find-closest-block))
-         (open-block (car blocks))
-         (close-block (cadr blocks)))
-    (if (or (equal open-block ?')
-            (equal open-block ?\")
-            (equal open-block ?`))
+(defun evil-anyblock--choose-textobj-method
+    (open-block close-block beg end type count outerp)
+  "Determine appropriate evil function to use based on whether OPEN-BLOCK and
+CLOSE-BLOCK can be characters and whether they are quotes. OUTERP determines
+whether to make an outer or inner textobject."
+  (let* ((blocks
+          (if (= 1 (length open-block) (length close-block))
+              ;; evil-up-block has undesirable behaviour
+              ;; (which is what is used if arg to evil-select-paren is a string)
+              (list (string-to-char open-block) (string-to-char close-block))
+            (list open-block close-block)))
+         (open-block (first blocks))
+         (close-block (second blocks)))
+    (if (and (equal open-block close-block)
+             (or (equal open-block  ?')
+                 (equal open-block  ?\")
+                 (equal open-block  ?`)))
         (evil-select-quote open-block beg end type count outerp)
       (evil-select-paren open-block close-block beg end type count outerp))))
 
-;; if fails with no surrounding delimeters found, seek forward
+(defun evil-anyblock--sort-blocks (beg end type count outerp)
+  "Sort blocks by the size of the selection they would create."
+  (sort
+   (cl-loop for (open-block . close-block) in evil-anyblock-blocks
+            when (ignore-errors
+                   (let ((block-info
+                          (evil-anyblock--choose-textobj-method
+                           open-block close-block beg end type count outerp)))
+                     (when (and block-info
+                                ;; prevent seeking forward behaviour for quotes
+                                (>= (point) (first block-info))
+                                (<= (point) (second block-info)))
+                       ;; (append block-info (list open-block close-block))
+                       block-info)))
+            collect it)
+   ;; sort by area of selection
+   (lambda (x y) (< (- (second x) (first x))
+                    (- (second y) (first y))))))
+
 (evil-define-text-object evil-anyblock-inner-block (count &optional beg end type)
   "Select the closest inner anyblock block."
-  (evil-anyblock--make-textobj nil))
+  (car (evil-anyblock--sort-blocks beg end type count nil)))
 
 (evil-define-text-object evil-anyblock-a-block (count &optional beg end type)
   "Select the closest outer anyblock block."
-  (evil-anyblock--make-textobj t))
+  (car (evil-anyblock--sort-blocks beg end type count t)))
 
 (provide 'evil-anyblock)
 ;;; evil-textobj-anyblock.el ends here
