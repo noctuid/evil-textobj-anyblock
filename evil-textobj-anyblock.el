@@ -59,8 +59,8 @@ whether to make an outer or inner textobject."
               ;; (which is what is used if arg to evil-select-paren is a string)
               (list (string-to-char open-block) (string-to-char close-block))
             (list open-block close-block)))
-         (open-block (first blocks))
-         (close-block (second blocks)))
+         (open-block (cl-first blocks))
+         (close-block (cl-second blocks)))
     (if (and (equal open-block close-block)
              (or (equal open-block  ?')
                  (equal open-block  ?\")
@@ -78,13 +78,13 @@ whether to make an outer or inner textobject."
                            open-block close-block beg end type count outerp)))
                      (when (and block-info
                                 ;; prevent seeking forward behaviour for quotes
-                                (>= (point) (first block-info))
-                                (<= (point) (second block-info)))
+                                (>= (point) (cl-first block-info))
+                                (<= (point) (cl-second block-info)))
                        block-info)))
             collect it)
    ;; sort by area of selection
-   (lambda (x y) (< (- (second x) (first x))
-                    (- (second y) (first y))))))
+   (lambda (x y) (< (- (cl-second x) (cl-first x))
+                    (- (cl-second y) (cl-first y))))))
 
 (defun evil-anyblock--seek-forward ()
   "If an open-block is found, seek to the position and return the open and close
@@ -106,8 +106,8 @@ blocks."
       ;; seek if no surrounding textobj found
       (let* ( ;; (save-position (point))
              (seek-block-list (evil-anyblock--seek-forward))
-             (open-block (first seek-block-list))
-             (close-block (second seek-block-list))
+             (open-block (cl-first seek-block-list))
+             (close-block (cl-second seek-block-list))
              ;; need to alter beg and end to get it to work in visual mode
              (new-beg (if (equal evil-state 'visual)
                           evil-visual-beginning
