@@ -14,7 +14,9 @@
 ;; something like i{ or i<. This package allows for the list of blocks to be
 ;; changed. They can be more complicated regexps. A simple expand-region like
 ;; functionality is also provided when in visual mode, though this is not a
-;; primary focus of the plugin and does not exist in vim-textobj-anyblock.
+;; primary focus of the plugin and does not exist in vim-textobj-anyblock. Also,
+;; in the case that the point is not inside of a block, anyblock will seek
+;; forward to the next block.
 
 ;; The required version of evil is based on the last change I could find to
 ;; evil-select-paren, but the newest version of evil is probably preferable.
@@ -78,20 +80,51 @@ whether to make an outer or inner textobject."
                                 ;; prevent seeking forward behaviour for quotes
                                 (>= (point) (first block-info))
                                 (<= (point) (second block-info)))
-                       ;; (append block-info (list open-block close-block))
                        block-info)))
             collect it)
    ;; sort by area of selection
    (lambda (x y) (< (- (second x) (first x))
                     (- (second y) (first y))))))
 
-(evil-define-text-object evil-anyblock-inner-block (count &optional beg end type)
+(defun evil-anyblock--seek-forward ()
+  "If an open-block is found, seek to the position and return the open and close
+blocks."
+  (let* ((open-blocks (mapconcat 'car evil-anyblock-blocks "\\|"))
+         (match-position (re-search-forward open-blocks nil t)))
+    (when match-position
+      ;; determine found block
+      (cl-loop for (open-block . close-block) in evil-anyblock-blocks
+         until (looking-back open-block)
+         finally return (list open-block close-block)))))
+
+(defun evil-anyblock--make-textobj (beg end type count outerp)
+  "Helper function for creating both inner and outer text objects."
+  (let ((textobj-info
+         (car (evil-anyblock--sort-blocks beg end type count outerp))))
+    (if textobj-info
+        textobj-info
+      ;; seek if no surrounding textobj found
+      (let* ( ;; (save-position (point))
+             (seek-block-list (evil-anyblock--seek-forward))
+             (open-block (first seek-block-list))
+             (close-block (second seek-block-list))
+             ;; need to alter beg and end to get it to work in visual mode
+             (new-beg (if (equal evil-state 'visual)
+                          evil-visual-beginning
+                        (point)))
+             (new-end (save-excursion (right-char) (point))))
+        (when seek-block-list
+          (evil-anyblock--choose-textobj-method
+           open-block close-block new-beg new-end type count outerp))))))
+
+(evil-define-text-object evil-anyblock-inner-block
+  (count &optional beg end type)
   "Select the closest inner anyblock block."
-  (car (evil-anyblock--sort-blocks beg end type count nil)))
+  (evil-anyblock--make-textobj beg end type count nil))
 
 (evil-define-text-object evil-anyblock-a-block (count &optional beg end type)
   "Select the closest outer anyblock block."
-  (car (evil-anyblock--sort-blocks beg end type count t)))
+  (evil-anyblock--make-textobj beg end type count t))
 
 (provide 'evil-anyblock)
 ;;; evil-textobj-anyblock.el ends here
