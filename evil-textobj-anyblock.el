@@ -27,7 +27,7 @@
 (require 'cl-lib)
 (require 'evil)
 
-(defgroup evil-anyblock nil
+(defgroup evil-textobj-anyblock nil
   "Gives text objects for selecting the closest block from any in a user-defined
 alist."
   :group 'evil
@@ -126,5 +126,5 @@ blocks."
   "Select the closest outer anyblock block."
   (evil-anyblock--make-textobj beg end type count t))
 
-(provide 'evil-anyblock)
+(provide 'evil-textobj-anyblock)
 ;;; evil-textobj-anyblock.el ends here
