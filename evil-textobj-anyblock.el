@@ -36,7 +36,7 @@ alist."
 (defcustom evil-anyblock-blocks
   '(("(" . ")")
     ("{" . "}")
-    ("[" . "]")
+    ("\\[" . "\\]")
     ("<" . ">")
     ("'" . "'")
     ("\"" . "\"")
@@ -54,11 +54,15 @@ alist."
 CLOSE-BLOCK can be characters and whether they are quotes. OUTERP determines
 whether to make an outer or inner textobject."
   (let* ((blocks
-          (if (= 1 (length open-block) (length close-block))
-              ;; evil-up-block has undesirable behaviour
-              ;; (which is what is used if arg to evil-select-paren is a string)
-              (list (string-to-char open-block) (string-to-char close-block))
-            (list open-block close-block)))
+          ;; evil-up-block can have less desirable behaviour
+          ;; (which is what is used if arg to evil-select-paren is a string)
+          (cond ((= 1 (length open-block) (length close-block))
+                 (list (string-to-char open-block)
+                       (string-to-char close-block)))
+                ;; square brackets are double escaped for re-search-forward
+                ((and (equal open-block "\\[") (equal close-block "\\]"))
+                 (list ?\[ ?\]))
+                (t (list open-block close-block))))
          (open-block (cl-first blocks))
          (close-block (cl-second blocks)))
     (if (and (equal open-block close-block)
