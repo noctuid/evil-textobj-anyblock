@@ -31,9 +31,9 @@
   "Gives text objects for selecting the closest block from any in a user-defined
 alist."
   :group 'evil
-  :prefix 'evil-anyblock-)
+  :prefix 'evil-textobj-anyblock-)
 
-(defcustom evil-anyblock-blocks
+(defcustom evil-textobj-anyblock-blocks
   '(("(" . ")")
     ("{" . "}")
     ("\\[" . "\\]")
@@ -43,12 +43,12 @@ alist."
     ("`" . "`")
     ("“" . "”"))
   "Alist containing regexp blocks to look for."
-  :group 'evil-anyblock
+  :group 'evil-textobj-anyblock
   :type '(alist
           :key-type regexp
           :value-type rexegp))
 
-(defun evil-anyblock--choose-textobj-method
+(defun evil-textobj-anyblock--choose-textobj-method
     (open-block close-block beg end type count outerp)
   "Determine appropriate evil function to use based on whether OPEN-BLOCK and
 CLOSE-BLOCK can be characters and whether they are quotes. OUTERP determines
@@ -72,13 +72,13 @@ whether to make an outer or inner textobject."
         (evil-select-quote open-block beg end type count outerp)
       (evil-select-paren open-block close-block beg end type count outerp))))
 
-(defun evil-anyblock--sort-blocks (beg end type count outerp)
+(defun evil-textobj-anyblock--sort-blocks (beg end type count outerp)
   "Sort blocks by the size of the selection they would create."
   (sort
-   (cl-loop for (open-block . close-block) in evil-anyblock-blocks
+   (cl-loop for (open-block . close-block) in evil-textobj-anyblock-blocks
             when (ignore-errors
                    (let ((block-info
-                          (evil-anyblock--choose-textobj-method
+                          (evil-textobj-anyblock--choose-textobj-method
                            open-block close-block beg end type count outerp)))
                      (when (and block-info
                                 ;; prevent seeking forward behaviour for quotes
@@ -90,26 +90,26 @@ whether to make an outer or inner textobject."
    (lambda (x y) (< (- (cl-second x) (cl-first x))
                     (- (cl-second y) (cl-first y))))))
 
-(defun evil-anyblock--seek-forward ()
+(defun evil-textobj-anyblock--seek-forward ()
   "If an open-block is found, seek to the position and return the open and close
 blocks."
-  (let* ((open-blocks (mapconcat 'car evil-anyblock-blocks "\\|"))
+  (let* ((open-blocks (mapconcat 'car evil-textobj-anyblock-blocks "\\|"))
          (match-position (re-search-forward open-blocks nil t)))
     (when match-position
       ;; determine found block
-      (cl-loop for (open-block . close-block) in evil-anyblock-blocks
+      (cl-loop for (open-block . close-block) in evil-textobj-anyblock-blocks
          until (looking-back open-block)
          finally return (list open-block close-block)))))
 
-(defun evil-anyblock--make-textobj (beg end type count outerp)
+(defun evil-textobj-anyblock--make-textobj (beg end type count outerp)
   "Helper function for creating both inner and outer text objects."
   (let ((textobj-info
-         (car (evil-anyblock--sort-blocks beg end type count outerp))))
+         (car (evil-textobj-anyblock--sort-blocks beg end type count outerp))))
     (if textobj-info
         textobj-info
       ;; seek if no surrounding textobj found
       (let* ( ;; (save-position (point))
-             (seek-block-list (evil-anyblock--seek-forward))
+             (seek-block-list (evil-textobj-anyblock--seek-forward))
              (open-block (cl-first seek-block-list))
              (close-block (cl-second seek-block-list))
              ;; need to alter beg and end to get it to work in visual mode
@@ -118,17 +118,17 @@ blocks."
                         (point)))
              (new-end (save-excursion (right-char) (point))))
         (when seek-block-list
-          (evil-anyblock--choose-textobj-method
+          (evil-textobj-anyblock--choose-textobj-method
            open-block close-block new-beg new-end type count outerp))))))
 
-(evil-define-text-object evil-anyblock-inner-block
+(evil-define-text-object evil-textobj-anyblock-inner-block
   (count &optional beg end type)
   "Select the closest inner anyblock block."
-  (evil-anyblock--make-textobj beg end type count nil))
+  (evil-textobj-anyblock--make-textobj beg end type count nil))
 
-(evil-define-text-object evil-anyblock-a-block (count &optional beg end type)
+(evil-define-text-object evil-textobj-anyblock-a-block (count &optional beg end type)
   "Select the closest outer anyblock block."
-  (evil-anyblock--make-textobj beg end type count t))
+  (evil-textobj-anyblock--make-textobj beg end type count t))
 
 (provide 'evil-textobj-anyblock)
 ;;; evil-textobj-anyblock.el ends here
