@@ -10,7 +10,7 @@ Anyblock does not make any mappings by default. Here is some suggested configura
 (define-key evil-outer-text-objects-map "b" 'evil-textobj-anyblock-a-block)
 ```
 
-The block alist can be modified by the user and contains regexps (though non-characters may not work well). The user may want to set this variable locally, for example for lisp modes by removing ='= as a potential block:
+The block alist can be modified by the user and contains regexps (though non-characters may not work well). The user may want to set this variable locally, for example for lisp modes by removing `'` as a potential block:
 ```
 (add-hook 'lisp-mode-hook
           '(setq-local evil-textobj-anyblock-blocks
