@@ -121,11 +121,13 @@ blocks."
           (evil-textobj-anyblock--choose-textobj-method
            open-block close-block new-beg new-end type count outerp))))))
 
+;;;###autoload (autoload 'evil-textobj-anyblock-inner-block "evil-textobj-anyblock" nil t)
 (evil-define-text-object evil-textobj-anyblock-inner-block
   (count &optional beg end type)
   "Select the closest inner anyblock block."
   (evil-textobj-anyblock--make-textobj beg end type count nil))
 
+;;;###autoload (autoload 'evil-textobj-anyblock-a-block "evil-textobj-anyblock" nil t)
 (evil-define-text-object evil-textobj-anyblock-a-block (count &optional beg end type)
   "Select the closest outer anyblock block."
   (evil-textobj-anyblock--make-textobj beg end type count t))
