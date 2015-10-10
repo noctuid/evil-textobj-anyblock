@@ -13,9 +13,10 @@ Anyblock does not make any mappings by default. Here is some suggested configura
 The block alist can be modified by the user and contains regexps (though non-characters may not work well). The user may want to set this variable locally, for example for lisp modes by removing `'` as a potential block:
 ```
 (add-hook 'lisp-mode-hook
-          '(setq-local evil-textobj-anyblock-blocks
-                       '(("(" . ")")
-                         ("{" . "}")
-                         ("\\[" . "\\]")
-                         ("\"" . "\""))))
+          (lambda ()
+            (setq-local evil-textobj-anyblock-blocks
+                        '(("(" . ")")
+                          ("{" . "}")
+                          ("\\[" . "\\]")
+                          ("\"" . "\"")))))
 ```
