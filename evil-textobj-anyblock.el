@@ -66,9 +66,9 @@ whether to make an outer or inner textobject."
          (open-block (cl-first blocks))
          (close-block (cl-second blocks)))
     (if (and (equal open-block close-block)
-             (or (equal open-block  ?')
-                 (equal open-block  ?\")
-                 (equal open-block  ?`)))
+             (or (equal open-block ?')
+                 (equal open-block ?\")
+                 (equal open-block ?`)))
         (evil-select-quote open-block beg end type count outerp)
       (evil-select-paren open-block close-block beg end type count outerp))))
 
@@ -84,9 +84,13 @@ whether to make an outer or inner textobject."
                                 ;; prevent seeking forward behaviour for quotes
                                 (>= (point) (cl-first block-info))
                                 (<= (point) (cl-second block-info)))
+                       ;; (append block-info (list open-block close-block))
                        block-info)))
             collect it)
    ;; sort by area of selection
+   ;; used to search for closest open block, which is probably more efficient
+   ;; but resulted in some undesirable behaviour; I don't notice any slowdown
+   ;; from doing it this way
    (lambda (x y) (< (- (cl-second x) (cl-first x))
                     (- (cl-second y) (cl-first y))))))
 
@@ -98,8 +102,8 @@ blocks."
     (when match-position
       ;; determine found block
       (cl-loop for (open-block . close-block) in evil-textobj-anyblock-blocks
-         until (looking-back open-block)
-         finally return (list open-block close-block)))))
+               until (looking-back open-block)
+               finally return (list open-block close-block)))))
 
 (defun evil-textobj-anyblock--make-textobj (beg end type count outerp)
   "Helper function for creating both inner and outer text objects."
