@@ -54,3 +54,6 @@ This package also provides motions, which may or may not be useful. For example,
 ```
 (define-key evil-motion-state-map "b" 'evil-textobj-anyblock-forward-open-block-start)
 ```
+
+# Similar
+If you just want a text-object that operates on s-expressions, you may want to use the "form" text objects that [evil-cleverparens](https://github.com/luxbock/evil-cleverparens) provides. They are very nice and will work with parentheses and quotations.
