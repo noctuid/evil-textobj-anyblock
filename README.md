@@ -20,3 +20,37 @@ The block alist can be modified by the user and contains regexps (though non-cha
                           ("\\[" . "\\]")
                           ("\"" . "\"")))))
 ```
+
+# Creating More Specific Text Objects
+This package can potentially be used to create text objects for more specific use cases. I'm sure there is already a package that does this, but as an example, you can use the following to create a text object that will select the closest quotation (single, double, smart, etc.):
+
+```
+(evil-define-text-object my-evil-textobj-anyblock-inner-quote
+  (count &optional beg end type)
+  "Select the closest outer quote."
+  (let ((evil-textobj-anyblock-blocks
+         '(("'" . "'")
+           ("\"" . "\"")
+           ("`" . "'")
+           ("“" . "”"))))
+    (evil-textobj-anyblock--make-textobj beg end type count nil)))
+
+(evil-define-text-object my-evil-textobj-anyblock-a-quote
+  (count &optional beg end type)
+  "Select the closest outer quote."
+  (let ((evil-textobj-anyblock-blocks
+         '(("'" . "'")
+           ("\"" . "\"")
+           ("`" . "'")
+           ("“" . "”"))))
+    (evil-textobj-anyblock--make-textobj beg end type count t)))
+
+(define-key evil-inner-text-objects-map "q" 'my-evil-textobj-anyblock-inner-quote)
+(define-key evil-outer-text-objects-map "q" 'my-evil-textobj-anyblock-a-quote)
+```
+
+# Motions
+This package also provides motions, which may or may not be useful. For example, if you want to override `b`:
+```
+(define-key evil-motion-state-map "b" 'evil-textobj-anyblock-forward-open-block-start)
+```
