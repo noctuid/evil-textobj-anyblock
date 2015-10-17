@@ -136,7 +136,8 @@ blocks."
   "Select the closest outer anyblock block."
   (evil-textobj-anyblock--make-textobj beg end type count t))
 
-(defun evil-textobj-anyblock--forward-block (open-block start count)
+(defun evil-textobj-anyblock--forward-block (open-block start count
+                                                        &optional both-blocks)
   "Go forward to the nearest start or end of a block.
 When OPEN-BLOCK is non-nil, this will jump to the open form of a block.
 When OPEN-BLOCK is nil, this will jump to the close form of a block.
@@ -146,9 +147,12 @@ COUNT determines how many times to do this. A negative COUNT will result in a
 backwards jump."
   (let ((search
          (concat "\\("
-                 (mapconcat (lambda (x) (if open-block
-                                            (car x)
-                                          (cdr x)))
+                 (mapconcat (lambda (x) (cond (both-blocks
+                                               (concat (car x) "\\|" (cdr x)))
+                                              (open-block
+                                               (car x))
+                                              (t
+                                               (cdr x))))
                             evil-textobj-anyblock-blocks "\\|")
                  "\\)")))
     (re-search-forward search nil t count)
@@ -195,6 +199,31 @@ backwards jump."
 (evil-define-motion evil-textobj-anyblock-backward-close-block-end (count)
   "Move backward to the end of the closest close form of a block COUNT times."
   (evil-textobj-anyblock--forward-block nil nil (or (when count (- count)) -1)))
+
+;;;###autoload (autoload 'evil-textobj-anyblock-forward-any-block-start "evil-textobj-anyblock" nil t)
+(evil-define-motion evil-textobj-anyblock-forward-any-block-start (count)
+  "Move forward to the start of the closest open or close form of a block COUNT
+ times."
+  (evil-textobj-anyblock--forward-block nil t (or count 1) t))
+
+;;;###autoload (autoload 'evil-textobj-anyblock-forward-any-block-end "evil-textobj-anyblock" nil t)
+(evil-define-motion evil-textobj-anyblock-forward-any-block-end (count)
+  "Move forward to the end of the closest open or close form of a block COUNT
+times."
+  (evil-textobj-anyblock--forward-block nil nil (or count 1) t))
+
+;;;###autoload (autoload 'evil-textobj-anyblock-backward-any-block-start "evil-textobj-anyblock" nil t)
+(evil-define-motion evil-textobj-anyblock-backward-any-block-start (count)
+  "Move backward to the start of the closest open or close form of a block COUNT
+ times."
+  (evil-textobj-anyblock--forward-block nil t (or (when count (- count)) -1) t))
+
+;;;###autoload (autoload 'evil-textobj-anyblock-backward-any-block-end "evil-textobj-anyblock" nil t)
+(evil-define-motion evil-textobj-anyblock-backward-any-block-end (count)
+  "Move backward to the end of the closest open or close form of a block COUNT
+times."
+  (evil-textobj-anyblock--forward-block nil nil (or (when count (- count)) -1)
+                                        t))
 
 (provide 'evil-textobj-anyblock)
 ;;; evil-textobj-anyblock.el ends here
