@@ -1,0 +1,25 @@
+language: emacs-lisp
+
+script:
+  - evm install $EVM_EMACS --use --skip
+  - emacs --version
+  - make cask
+  - make test
+
+env:
+  matrix:
+    - EVM_EMACS=emacs-24.4-travis
+    - EVM_EMACS=emacs-24.5-travis
+    - EVM_EMACS=emacs-25-pre-travis
+    - EVM_EMACS=emacs-git-snapshot-travis
+matrix:
+  fast_finish: true
+  allow_failures:
+    - env: EVM_EMACS=emacs-git-snapshot-travis
+
+# install cask and evm
+before_install:
+  - curl -fsSkL https://gist.github.com/rejeep/ebcd57c3af83b049833b/raw > x.sh && source ./x.sh
+
+notifications:
+  email: false
