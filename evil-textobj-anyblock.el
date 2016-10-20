@@ -107,23 +107,31 @@ blocks."
 
 (defun evil-textobj-anyblock--make-textobj (beg end type count outerp)
   "Helper function for creating both inner and outer text objects."
-  (let ((textobj-info
-         (car (evil-textobj-anyblock--sort-blocks beg end type count outerp))))
-    (if textobj-info
-        textobj-info
-      ;; seek if no surrounding textobj found
-      (let* ( ;; (save-position (point))
-             (seek-block-list (evil-textobj-anyblock--seek-forward))
-             (open-block (cl-first seek-block-list))
-             (close-block (cl-second seek-block-list))
-             ;; need to alter beg and end to get it to work in visual mode
-             (new-beg (if (equal evil-state 'visual)
-                          evil-visual-beginning
-                        (point)))
-             (new-end (save-excursion (right-char) (point))))
-        (when seek-block-list
-          (evil-textobj-anyblock--choose-textobj-method
-           open-block close-block new-beg new-end type count outerp))))))
+  ;;; Why do week seek if there is no surrounding textobj?  This makes me
+  ;;; occasionally go to a sibling node at the top level, when what I really
+  ;;; want to do is just have it be a no-op.  It seems to work perfectly if
+  ;;; I just do textobj-info if it's there, and otherwise simply fail.
+  ;;; (The times it goes to a sibling node is when I have multi-character
+  ;;; delimiters, which is rare but occasionally happens.)
+;  (let ((textobj-info
+;         (car (evil-textobj-anyblock--sort-blocks beg end type count outerp))))
+;    (if textobj-info
+;        textobj-info
+;      ;; seek if no surrounding textobj found
+;      (let* ( ;; (save-position (point))
+;             (seek-block-list (evil-textobj-anyblock--seek-forward))
+;             (open-block (cl-first seek-block-list))
+;             (close-block (cl-second seek-block-list))
+;             ;; need to alter beg and end to get it to work in visual mode
+;             (new-beg (if (equal evil-state 'visual)
+;                          evil-visual-beginning
+;                        (point)))
+;             (new-end (save-excursion (right-char) (point))))
+;        (when seek-block-list
+;          (evil-textobj-anyblock--choose-textobj-method
+;           open-block close-block new-beg new-end type count outerp)))))
+  (car (evil-textobj-anyblock--sort-blocks beg end type count outerp))
+  )
 
 ;;;###autoload (autoload 'evil-textobj-anyblock-inner-block "evil-textobj-anyblock" nil t)
 (evil-define-text-object evil-textobj-anyblock-inner-block
