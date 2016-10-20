@@ -1,6 +1,6 @@
 emacs ?= emacs
 CASK ?= cask
-BEMACS = $(emacs) -batch -l elpa.el
+BEMACS = $(emacs) -batch -l elpa/elpa.el
 LOAD = -l evil-textobj-anyblock.el
 
 cask:
