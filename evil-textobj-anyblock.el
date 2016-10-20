@@ -82,8 +82,8 @@ whether to make an outer or inner textobject."
                            open-block close-block beg end type count outerp)))
                      (when (and block-info
                                 ;; prevent seeking forward behaviour for quotes
-                                (>= (point) (cl-first block-info))
-                                (<= (point) (cl-second block-info)))
+                                (>= beg (cl-first block-info))
+                                (<= end (cl-second block-info)))
                        ;; (append block-info (list open-block close-block))
                        block-info)))
             collect it)
