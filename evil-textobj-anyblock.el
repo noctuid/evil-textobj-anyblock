@@ -48,6 +48,13 @@ alist."
           :key-type regexp
           :value-type rexegp))
 
+(defcustom evil-textobj-anyblock-ignore-surrounding nil
+  "Whether to ignore the surrounding text object.
+
+If set to t, will always pick the next text object."
+  :group 'evil-textobj-anyblock
+  :type 'bool)
+
 (defun evil-textobj-anyblock--choose-textobj-method
     (open-block close-block beg end type count outerp)
   "Determine appropriate evil function to use based on whether OPEN-BLOCK and
@@ -110,7 +117,7 @@ blocks."
   "Helper function for creating both inner and outer text objects."
   (let ((textobj-info
          (car (evil-textobj-anyblock--sort-blocks beg end type count outerp))))
-    (if textobj-info
+    (if (and textobj-info (not evil-textobj-anyblock-ignore-surrounding))
         textobj-info
       ;; seek if no surrounding textobj found
       (let* ( ;; (save-position (point))
