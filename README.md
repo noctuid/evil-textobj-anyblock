@@ -1,3 +1,6 @@
+# Deprecation Notice
+I have discontinued development of this package, as [targets.el](https://github.com/noctuid/targets.el) implements all of this package's functionality and more. Targets.el is not yet stable, so feel free to continue to use this package, but please make any bug reports or feature requests in the targets repository.
+
 # About [![MELPA](http://melpa.org/packages/evil-textobj-anyblock-badge.svg)](http://melpa.org/#/evil-textobj-anyblock)
 Evil-textobj-anyblock is port of the vim plugin [vim-textobj-anyblock](https://github.com/rhysd/vim-textobj-anyblock). It gives a text object that will select the closest of `()`, `{}`, `[]`, `<>`, `''`, `""`, `` ` ` ``, or `“”` by default. This can be convenient for operating on the closest block without having to type its symbol.
 
