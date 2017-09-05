@@ -1,6 +1,6 @@
 ;;; evil-textobj-anyblock.el --- Textobject for the closest user-defined blocks.
 
-;; Author: Lit Wakefield <noct@openmailbox.org>
+;; Author: Fox Kiester <noct@openmailbox.org>
 ;; URL: https://github.com/noctuid/evil-textobj-anyblock
 ;; Keywords: evil
 ;; Package-Requires: ((cl-lib "0.5") (evil "1.1.0"))
