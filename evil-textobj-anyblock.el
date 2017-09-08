@@ -83,8 +83,9 @@ whether to make an outer or inner textobject."
                      (when (and block-info
                                 ;; prevent seeking forward behaviour for quotes
                                 ;; require a new region to be larder on both sides
-                                (>= (or beg (point)) (cl-first block-info))
-                                (<= (or end (point)) (cl-second block-info)))
+                                (or (and (not beg) (not end))
+                                    (>= beg (cl-first block-info))
+                                    (<= rnd (cl-second block-info))))
                        ;; (append block-info (list open-block close-block))
                        block-info)))
             collect it)
